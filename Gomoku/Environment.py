@@ -17,10 +17,22 @@ class EnvConfig:
 
     @classmethod
     def from_env(cls):
+        board_size_x = os.getenv("BOARD_SIZE_X")
+        if not board_size_x:
+            raise ValueError("env.txt is missing a size parameter.")
+
+        board_size_y = os.getenv("BOADR_SIZE_Y")
+        if not board_size_y:
+            raise ValueError("env.txt is missing a size parameter.")
+
+        win_length = os.getenv("WIN_LENGTH")
+        if not win_length:
+            raise ValueError("env.txt is missing win length specification.")
+
         return cls(
-            board_size_x=int(os.environ["BOARD_SIZE_X"]),
-            board_size_y=int(os.environ["BOADR_SIZE_Y"]),
-            win_length=int(os.environ["WIN_LENGTH"])
+            board_size_x=int(board_size_x),
+            board_size_y=int(board_size_y),
+            win_length=int(win_length)
         )
 
 
@@ -87,9 +99,3 @@ class Environment:
 game = Environment()
 game.visualizer()
 game.root.mainloop()
-
-"""
-while not game.is_win():
-    game.visualizer()
-    game.click_input()
-"""
