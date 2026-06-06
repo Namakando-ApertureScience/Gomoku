@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from pathlib import Path
 import tkinter as tk
-import warnings
-import torch
+import numpy as np
 import os
 
 load_dotenv(Path(__file__).with_name("env.txt"))
@@ -36,40 +35,62 @@ class EnvConfig:
         )
 
 
-def quiet_device_check():
-    with warnings.catch_warnings(record=False):
-        warnings.filterwarnings(
-            action="ignore",
-            category=UserWarning
-        )
-        return torch.accelerator.is_available()
-
-
 class Environment:
 
     def __init__(self):
 
         self.config = EnvConfig.from_env()
 
-        device = "cpu"
-        if quiet_device_check():
-            self.device = torch.accelerator.current_accelerator()
-            print(f"You are using the {device} accelerator.")
-        else:
-            print("You are using your CPU.")
-
-        self.state_vector_X = torch.zeros(self.config.board_size_x*self.config.board_size_y).to(device)
-        self.state_vector_O = torch.zeros(self.config.board_size_x*self.config.board_size_y).to(device)
+        self.state_vector_X = np.zeros(self.config.board_size_x * self.config.board_size_y)
+        self.state_vector_O = np.zeros(self.config.board_size_x * self.config.board_size_y)
 
         self.root = tk.Tk()
         self.root.title("Gomoku")
         self.current_player = "X"
         self.buttons = []
 
+        self.check_alg = np.array([[0, 1], [1, 0], [1, 1], [1, -1]])
 
-    def is_win(self):
-        return
+    def is_win_X(self, last_move):
 
+        for check in self.check_alg:
+            count = 0
+
+            for i in range(2):
+                sub_count = 1
+
+                while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
+                    < self.config.board_size_x * self.config.board_size_y and (self.state_vector_X[
+                    last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
+                    and sub_count < self.config.win_length + 1)):
+
+                    sub_count += 1
+
+                count += sub_count
+                if count == self.config.win_length+1:
+                    return True
+
+        return False
+
+    def is_win_O(self, last_move):
+
+        for check in self.check_alg:
+            count = 0
+
+            for i in range(2):
+                sub_count = 1
+
+                while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
+                    < self.config.board_size_x * self.config.board_size_y and (self.state_vector_O[
+                    last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
+                    and sub_count < self.config.win_length + 1)):
+                    sub_count += 1
+
+                count += sub_count
+                if count == self.config.win_length + 1:
+                    return True
+
+        return False
 
     def click_input(self, row, col):
 
@@ -78,7 +99,20 @@ class Environment:
 
         if button["text"] == "":
             button["text"] = current_player
-            self.current_player = "O" if current_player == "X" else "X"
+
+            if current_player == "X":
+                self.current_player = "O"
+                self.state_vector_X[row * self.config.board_size_x + col] = 1
+                if self.is_win_X(row * self.config.board_size_x + col):
+                    print("Congratulations, X wins!")
+                    self.root.quit()
+
+            else:
+                self.current_player = "X"
+                self.state_vector_O[row * self.config.board_size_x + col] = 1
+                if self.is_win_O(row * self.config.board_size_x + col):
+                    print("Congratulations, O wins!")
+                    self.root.quit()
 
     def visualizer(self):
         for row in range(self.config.board_size_y):
@@ -93,7 +127,6 @@ class Environment:
                 btn.grid(row=row, column=column)
                 button_row.append(btn)
             self.buttons.append(button_row)
-
 
 
 game = Environment()
