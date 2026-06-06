@@ -63,7 +63,7 @@ class Environment:
                 while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
                     < self.config.board_size_x * self.config.board_size_y and (self.state_vector_X[
                     last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length)):
+                    and sub_count < self.config.win_length)) and not self.game_over:
 
                     sub_count += 1
 
@@ -84,7 +84,7 @@ class Environment:
                 while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
                     < self.config.board_size_x * self.config.board_size_y and (self.state_vector_O[
                     last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length)):
+                    and sub_count < self.config.win_length)) and not self.game_over:
                     sub_count += 1
 
                 count += sub_count
