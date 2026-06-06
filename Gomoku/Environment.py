@@ -48,6 +48,7 @@ class Environment:
         self.root.title("Gomoku")
         self.current_player = "X"
         self.buttons = []
+        self.game_over = False
 
         self.check_alg = np.array([[0, 1], [1, 0], [1, 1], [1, -1]])
 
@@ -62,12 +63,12 @@ class Environment:
                 while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
                     < self.config.board_size_x * self.config.board_size_y and (self.state_vector_X[
                     last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length + 1)):
+                    and sub_count < self.config.win_length)):
 
                     sub_count += 1
 
                 count += sub_count
-                if count > self.config.win_length:
+                if count == self.config.win_length+1:
                     return True
 
         return False
@@ -83,16 +84,18 @@ class Environment:
                 while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
                     < self.config.board_size_x * self.config.board_size_y and (self.state_vector_O[
                     last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length + 1)):
+                    and sub_count < self.config.win_length)):
                     sub_count += 1
 
                 count += sub_count
-                if count > self.config.win_length:
+                if count == self.config.win_length+1:
                     return True
 
         return False
 
     def click_input(self, row, col):
+        if self.game_over:
+            self.root.quit()
 
         current_player = self.current_player
         button = self.buttons[row][col]
@@ -105,14 +108,14 @@ class Environment:
                 self.state_vector_X[row * self.config.board_size_x + col] = 1
                 if self.is_win_X(row * self.config.board_size_x + col):
                     print("Congratulations, X wins!")
-                    self.root.quit()
+                    self.game_over = True
 
             else:
                 self.current_player = "X"
                 self.state_vector_O[row * self.config.board_size_x + col] = 1
                 if self.is_win_O(row * self.config.board_size_x + col):
                     print("Congratulations, O wins!")
-                    self.root.quit()
+                    self.game_over = True
 
     def visualizer(self):
         for row in range(self.config.board_size_y):
