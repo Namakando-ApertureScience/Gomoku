@@ -67,7 +67,7 @@ class Environment:
                     sub_count += 1
 
                 count += sub_count
-                if count == self.config.win_length+1:
+                if count > self.config.win_length:
                     return True
 
         return False
@@ -87,7 +87,7 @@ class Environment:
                     sub_count += 1
 
                 count += sub_count
-                if count == self.config.win_length + 1:
+                if count > self.config.win_length:
                     return True
 
         return False
