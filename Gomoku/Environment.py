@@ -53,28 +53,7 @@ class Environment:
 
         self.check_alg = np.array([[0, 1], [1, 0], [1, 1], [1, -1]])
 
-    def is_win_X(self, row, col):
-
-        for check in self.check_alg:
-            count = 0
-
-            for i in range(2):
-                sub_count = 0
-
-                while (0 <= row + check[0] * sub_count * (-1) ** i < self.config.board_size_y 
-                    and 0 <= col + check[1] * sub_count * (-1) ** i < self.config.board_size_x
-                    and self.state_matrix_X[row + check[0] * sub_count * (-1) ** i]
-                       [col + check[1] * sub_count * (-1) ** i] == 1
-                    and sub_count + 1 <= self.config.win_length and not self.game_over):
-                    sub_count += 1
-
-                count += sub_count
-                if count > self.config.win_length:
-                    return True
-
-        return False
-
-    def is_win_O(self, row, col):
+    def is_win(self, row, col, state_matrix):
 
         for check in self.check_alg:
             count = 0
@@ -84,7 +63,7 @@ class Environment:
 
                 while (0 <= row + check[0] * sub_count * (-1) ** i < self.config.board_size_y
                        and 0 <= col + check[1] * sub_count * (-1) ** i < self.config.board_size_x
-                       and self.state_matrix_O[row + check[0] * sub_count * (-1) ** i]
+                       and state_matrix[row + check[0] * sub_count * (-1) ** i]
                        [col + check[1] * sub_count * (-1) ** i] == 1
                        and sub_count + 1 <= self.config.win_length and not self.game_over):
                     sub_count += 1
@@ -109,14 +88,14 @@ class Environment:
             if current_player == "X":
                 self.current_player = "O"
                 self.state_matrix_X[row][col] = 1
-                if self.is_win_X(row, col):
+                if self.is_win(row, col, self.state_matrix_X):
                     print("X wins!")
                     self.game_over = True
 
             else:
                 self.current_player = "X"
                 self.state_matrix_O[row][col] = 1
-                if self.is_win_O(row, col):
+                if self.is_win(row, col, self.state_matrix_O):
                     print("O wins!")
                     self.game_over = True
 
