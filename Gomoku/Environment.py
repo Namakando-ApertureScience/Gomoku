@@ -41,30 +41,31 @@ class Environment:
 
         self.config = EnvConfig.from_env()
 
-        self.state_vector_X = np.zeros(self.config.board_size_x * self.config.board_size_y)
-        self.state_vector_O = np.zeros(self.config.board_size_x * self.config.board_size_y)
+        self.state_matrix_X = np.zeros([self.config.board_size_x, self.config.board_size_y])
+        self.state_matrix_O = np.zeros([self.config.board_size_x, self.config.board_size_y])
 
         self.root = tk.Tk()
         self.root.title("Gomoku")
         self.current_player = "X"
         self.buttons = []
         self.game_over = False
+        self.move_count = 0
 
         self.check_alg = np.array([[0, 1], [1, 0], [1, 1], [1, -1]])
 
-    def is_win_X(self, last_move):
+    def is_win_X(self, row, col):
 
         for check in self.check_alg:
             count = 0
 
             for i in range(2):
-                sub_count = 1
+                sub_count = 0
 
-                while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
-                    < self.config.board_size_x * self.config.board_size_y and (self.state_vector_X[
-                    last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length)) and not self.game_over:
-
+                while (0 <= row + check[0] * sub_count * (-1) ** i < self.config.board_size_y 
+                    and 0 <= col + check[1] * sub_count * (-1) ** i < self.config.board_size_x
+                    and self.state_matrix_X[row + check[0] * sub_count * (-1) ** i]
+                       [col + check[1] * sub_count * (-1) ** i] == 1
+                    and sub_count + 1 <= self.config.win_length and not self.game_over):
                     sub_count += 1
 
                 count += sub_count
@@ -73,18 +74,19 @@ class Environment:
 
         return False
 
-    def is_win_O(self, last_move):
+    def is_win_O(self, row, col):
 
         for check in self.check_alg:
             count = 0
 
             for i in range(2):
-                sub_count = 1
+                sub_count = 0
 
-                while (0 <= (last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i)
-                    < self.config.board_size_x * self.config.board_size_y and (self.state_vector_O[
-                    last_move + (self.config.board_size_x * check[0] + check[1]) * sub_count * (-1) ** i] == 1
-                    and sub_count < self.config.win_length)) and not self.game_over:
+                while (0 <= row + check[0] * sub_count * (-1) ** i < self.config.board_size_y
+                       and 0 <= col + check[1] * sub_count * (-1) ** i < self.config.board_size_x
+                       and self.state_matrix_O[row + check[0] * sub_count * (-1) ** i]
+                       [col + check[1] * sub_count * (-1) ** i] == 1
+                       and sub_count + 1 <= self.config.win_length and not self.game_over):
                     sub_count += 1
 
                 count += sub_count
@@ -101,21 +103,27 @@ class Environment:
         button = self.buttons[row][col]
 
         if button["text"] == "":
+            self.move_count += 1
             button["text"] = current_player
 
             if current_player == "X":
                 self.current_player = "O"
-                self.state_vector_X[row * self.config.board_size_x + col] = 1
-                if self.is_win_X(row * self.config.board_size_x + col):
-                    print("Congratulations, X wins!")
+                self.state_matrix_X[row][col] = 1
+                if self.is_win_X(row, col):
+                    print("X wins!")
                     self.game_over = True
 
             else:
                 self.current_player = "X"
-                self.state_vector_O[row * self.config.board_size_x + col] = 1
-                if self.is_win_O(row * self.config.board_size_x + col):
-                    print("Congratulations, O wins!")
+                self.state_matrix_O[row][col] = 1
+                if self.is_win_O(row, col):
+                    print("O wins!")
                     self.game_over = True
+
+            if (self.move_count == self.config.board_size_x * self.config.board_size_y
+                and not self.game_over):
+                print("The game is a draw!")
+                self.game_over = True
 
     def visualizer(self):
         for row in range(self.config.board_size_y):
